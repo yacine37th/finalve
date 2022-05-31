@@ -19,10 +19,7 @@ class Modifier_Profile extends StatefulWidget {
   State<Modifier_Profile> createState() => _Modifier_ProfileState();
 }
 
-
-
 class _Modifier_ProfileState extends State<Modifier_Profile> {
-    var firstnamme, lastnamme,  phonne, Urldownload;
   PlatformFile? pickedFile;
   UploadTask? uploadTask;
   Future uploadFile() async {
@@ -47,20 +44,58 @@ class _Modifier_ProfileState extends State<Modifier_Profile> {
       pickedFile = result.files.first;
     });
   }
-Future getaPic() async {
-  await FirebaseFirestore.instance
-      .collection("Docuser")
-      .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-      .get()
-      .then((value) {
-    value.docs.forEach((element) {
-      Urldownload = element.data()["picture"];
+
+  Future getaPic() async {
+    await FirebaseFirestore.instance
+        .collection("Docuser")
+        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      value.docs.forEach((element) {
+        Urldownload = element.data()["picture"];
+      });
     });
-  });
-}
-   @override
+  }
+
+  Future getDataPhone() async {
+    await FirebaseFirestore.instance
+        .collection("Docuser")
+        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      value.docs.forEach((element) {
+        phone = element.data()["phone"];
+      });
+    });
+  }
+
+  Future getData() async {
+    await FirebaseFirestore.instance
+        .collection("Docuser")
+        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      value.docs.forEach((element) {
+        firstname = element.data()["firstname"];
+      });
+    });
+    return firstname;
+  }
+
+  Future getDataLast() async {
+    await FirebaseFirestore.instance
+        .collection("Docuser")
+        .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      value.docs.forEach((element) {
+        lastname = element.data()["lastname"];
+      });
+    });
+  }
+
+  @override
   void initState() {
-   
     FirebaseFirestore.instance
         .collection("Patuser")
         .where("owner", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
@@ -85,16 +120,13 @@ Future getaPic() async {
     super.initState();
   }
 
-  // final TextEditingController _fname = TextEditingController();
-  // final TextEditingController _lname = TextEditingController();
-
-
   @override
+  String? firstnamme;
+  String? lastnamme;
+  var phonne;
   final _formKey = GlobalKey<FormState>();
-final CollectionReference userref =
+  final CollectionReference userref =
       FirebaseFirestore.instance.collection("Patuser");
-
-
   Widget build(BuildContext context) {
     double h = MediaQuery.of(context).size.height;
     double w = MediaQuery.of(context).size.width;
@@ -181,10 +213,15 @@ final CollectionReference userref =
                           key: _formKey,
                           children: [
                             Container(
+                               padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                               child: TextFormField(
-                                 onSaved: (val) {
-                                   firstnamme = val;
-                                 },
+                                onSaved: (val) {
+                                  if (val == null) {
+                                    firstnamme = firstname;
+                                  } else {
+                                    firstnamme = val;
+                                  }
+                                },
                                 //controller: _fname,
                                 decoration: ThemHelper().textInputDecoration(
                                     'First Name', 'Enter your first name'),
@@ -196,11 +233,16 @@ final CollectionReference userref =
                               height: h * 0.03,
                             ),
                             Container(
+                               padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                               child: TextFormField(
-                                 onSaved: (val) {
-                                   lastnamme = val;
-                                 },
-                              //  controller: _lname,
+                                onSaved: (val) {
+                                  if (val == null) {
+                                    lastnamme = lastname;
+                                  } else {
+                                    lastnamme = val;
+                                  }
+                                },
+                                //  controller: _lname,
                                 decoration: ThemHelper().textInputDecoration(
                                     'Last Name', 'Enter your last name'),
                               ),
@@ -211,9 +253,16 @@ final CollectionReference userref =
                               height: h * 0.03,
                             ),
                             Container(
+                               padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                               child: TextFormField(
                                 onSaved: (val) {
-                                  phonne = val;
+                                  if (val == null) {
+                                    phonne = phone;
+                                  }
+                                  else{
+                                    phonne = val;
+                                  }
+                                  
                                 },
                                 keyboardType: TextInputType.phone,
                                 decoration: ThemHelper().textInputDecoration(
@@ -244,22 +293,44 @@ final CollectionReference userref =
                                   ),
                                   onPressed: () async {
                                     await uploadFile();
-                                   //   _formKey.currentState?.save();
-                                       var formdata = _formKey.currentState;
-                                       formdata?.save();
+                                    //   _formKey.currentState?.save();
+                                    var formdata = _formKey.currentState;
+                                    formdata?.save();
                                     // final String? fname = _fname.text;
                                     // final String? lname = _lname.text;
                                     await userref
                                         .doc(FirebaseAuth
                                             .instance.currentUser!.uid)
-                                        .set({
-                                      "firstname": "firstnamme",
-                                      "lastname": "lastnamme",
-                                       "phone": "phonne",
-                                      "picture": Urldownload,
-                                    }
-                                    ,SetOptions(merge: true)
+                                        .update(
+                                      {
+                                        "firstname": firstnamme,
+                                        "lastname": lastnamme,
+                                        "phone": phonne,
+                                        "picture": Urldownload,
+                                      },
                                     );
+                                    FirebaseFirestore.instance
+                                        .collection("Patuser")
+                                        .where("owner",
+                                            isEqualTo: FirebaseAuth
+                                                .instance.currentUser!.uid)
+                                        .snapshots()
+                                        .listen((event) {
+                                      setState(() {
+                                        event.docs.forEach((element) {
+                                          firstnamme =
+                                              element.data()["firstname"];
+                                          print(
+                                              "firstname :${element.data()["firstname"]}");
+                                          lastnamme = element.data()["lastname"];
+                                          print(
+                                              "lastname :${element.data()["lastname"]}");
+                                          phonne = element.data()["phone"];
+                                          print(
+                                              "phone :${element.data()["phone"]}");
+                                        });
+                                      });
+                                    });
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(

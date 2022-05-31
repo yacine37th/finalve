@@ -319,9 +319,9 @@ class _RegistrationPageForDocState extends State<RegistrationPageForDoc> {
                           fit: BoxFit.cover,
                         )
                       : Icon(
-                                        Icons.person,
-                                        color: Colors.grey.shade300,
-                                        size: h * 0.14,
+                                Icons.person,
+                                color: Colors.grey.shade300,
+                                size: h * 0.14,
                                       ),
                                   ),  
                               ),  
